@@ -1,0 +1,126 @@
+---
+title: "Assignment 3"
+author: "Alber Sultan"
+date: "April 21, 2019"
+output:
+  html_document:
+    df_print: paged
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+
+
+``` {r, echo = FALSE, include = FALSE}
+library(tidyverse)
+library(dplyr)
+#import files
+RD_spending <- read_csv("fed_r_d_spending.csv")
+energySpending <- read_csv("energy_spending.csv")
+climateSpending <- read_csv("climate_spending.csv")
+
+ 
+data <- select(RD_spending,department,year,rd_budget) %>%
+  filter(department == 'NASA')
+```
+
+The first datset I looked at was the research and development spending data.
+I started by plotting how much the budget for each department changed over time.
+
+```{r, echo=FALSE}
+ggplot(RD_spending,aes(x=year,y=rd_budget)) +
+  facet_wrap(~department,scales = "free_y") +
+  geom_line()
+```
+
+From this I learned that the DOD, HHS and NIH had the most money spent for budget over time. 
+
+Also I found it interesting that NASA spending was very low after the Apollo program which was from 1960-1972 but as time went on it spiked again which was most likely due to the technological advancements in society. 
+
+```{r, echo=FALSE}
+ggplot(RD_spending,aes(x=year,y=rd_budget,color = department)) +
+  geom_line()
+```
+
+This second plot confirmed my findings about the highest budget departments. 
+
+Next I wanted to see how GDP, Discretionary outlays and total outlay compared to each other.
+
+```{r, echo=FALSE}
+ggplot(RD_spending) +
+  geom_line(aes(year,total_outlays, color = "total_outlay" )) +
+  geom_line(aes(year,discretionary_outlays, color = "discretionary_outlays" )) +
+  geom_line(aes(year,gdp, color = "gdp" )) +
+  xlab("Year") +
+  ylab("Cost") 
+```
+
+It is clear that they have all gone up over time but GDP at the fastest rate. 
+
+My next assumption was that the department of defense and homeland security would have a similar budget trend. 
+
+
+```{r, echo=FALSE}
+departments <- c('DOD', 'DHS')
+data <- select(RD_spending,department,year,rd_budget) %>%
+  filter(department %in% departments)
+ggplot(data,aes(x=year,y=rd_budget,color = department)) +
+         geom_line()+
+         geom_point() 
+```
+
+After looking at this graph the trend was a little similar in the sense that spending increased after the 9/11 attacks but the amount spent on the DOD was much larger than the DHS. 
+
+Next I looked at the energy spending dataset.
+
+```{r, echo=FALSE}
+ggplot(energySpending,aes(x=year,y=energy_spending)) +
+  facet_wrap(~department,scales = "free_y") +
+  geom_line()
+```
+
+From looking at these graphs it was very clear that a lot of initiative on energy changes were made in 2015 from all the upward spikes. This can be attributed to the 2015 united nations climate change conference in which countries pledged to limit its co2 output in the environment. 
+
+The next thing I wanted to look at was if there was a correlation between spending on nuclear energy and nuclear physics. 
+
+
+```{r, echo=FALSE}
+department_1 <- c('Nuclear Energy', 'Nuclear Physics*')
+data1 <- select(energySpending,department,year,energy_spending) %>%
+  filter(department %in% department_1)
+ggplot(data1,aes(x=year,y=energy_spending,color = department)) +
+  geom_line()+
+  geom_point()
+```
+
+My assumption was mostly correct besides the fact that a little more funding was put into nuclear energy.
+
+
+Lastly was the climate change spending dataset. Again I started by graphing all the different departments. 
+
+```{r, echo=FALSE}
+ggplot(climateSpending,aes(x=year,y=gcc_spending)) +
+  facet_wrap(~department,scales = "free_y") +
+  geom_line()
+```
+
+In this you can see spikes upward in 2010 and this is mostly due to the 2010 climate change conference. 
+
+One correlation I wanted to check was the nasa budget in gcc spending and rd budget. 
+
+```{r, echo=FALSE}
+nasa <- select(RD_spending,department,year,rd_budget) %>%
+  filter(department == 'NASA') %>%
+  filter(year > 1999)
+climateNasa <- select(climateSpending,department,year,gcc_spending) %>%
+  filter(department=='NASA') %>%
+  select(year,gcc_spending)
+new <- merge(nasa,climateNasa,by = "year")
+ggplot(new) +
+  geom_line(aes(x=year,y=gcc_spending, color = 'gcc_spending')) +
+  geom_line(aes(x=year,y=rd_budget,color = 'rd_budget')) +
+  xlab("Year") +
+  ylab("Cost") 
+```
